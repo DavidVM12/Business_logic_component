@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forms_app/presentation/blocs/counter_cubit/counter_cubit.dart';
 import 'package:forms_app/responsive/responsive.dart';
 
 class CubitCounterScreen extends StatelessWidget {
@@ -8,28 +10,76 @@ class CubitCounterScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     //call method init from ScreenSize class to get screen size
     ScreenSize.init(context);
+    return BlocProvider(
+        create: (_) => CounterCubit(), child: const _CubitCounterView());
+  }
+}
+
+class _CubitCounterView extends StatelessWidget {
+  const _CubitCounterView();
+
+  //user method to centralize the code and less code to write
+  void increaseCounterBy(BuildContext context, [int value = 1]) {
+    context.read<CounterCubit>().increaseBy(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // final counterState = context.watch<CounterCubit>().state;
+
+    /*it will be a good form to resolve problem to implement the methods of cubit
+     var counterCubit = context.read<CounterCubit>();*/
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cubit Counter'),
+        title: context.select((CounterCubit value) =>
+            Text('Cubit Counter: ${value.state.transactionCount}')),
         actions: [
           IconButton(
-              onPressed: () => {}, icon: const Icon(Icons.refresh_outlined))
+              onPressed: () {
+                //it's a good form to resolve problem to implement the methods of cubit and less code to write
+                context.read<CounterCubit>().reset();
+
+                // counterCubit.reset(),
+              },
+              icon: const Icon(Icons.refresh_outlined))
         ],
       ),
-      body: const Center(
-        child: Text('Counter value: xxx'),
+      body: Center(
+        child: BlocBuilder<CounterCubit, CounterState>(
+          // buildWhen: (previous, current) => current.counter != previous.counter,
+          builder: (context, state) {
+            return Text('Counter value: ${state.counter}');
+          },
+        ),
       ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton(
-              heroTag: '1', child: const Text('+3'), onPressed: () => {}),
+              heroTag: '1',
+              child: const Text('+3'),
+              onPressed: () {
+                increaseCounterBy(context, 3);
+
+                //  counterCubit.increaseBy(3)
+              }),
           SizedBox(height: ScreenSize.height * 0.02),
           FloatingActionButton(
-              heroTag: '2', child: const Text('+2'), onPressed: () => {}),
+              heroTag: '2',
+              child: const Text('+2'),
+              onPressed: () {
+                increaseCounterBy(context, 2);
+                //  counterCubit.increaseBy(2)
+              }),
           SizedBox(height: ScreenSize.height * 0.02),
           FloatingActionButton(
-              heroTag: '3', child: const Text('+1'), onPressed: () => {}),
+              heroTag: '3',
+              child: const Text('+1'),
+              onPressed: () {
+                increaseCounterBy(context);
+                //  counterCubit.increaseBy(1)
+              }),
           SizedBox(height: ScreenSize.height * 0.02),
         ],
       ),
